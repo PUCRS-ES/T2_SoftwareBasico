@@ -57,6 +57,25 @@ void process()
     buildTex();
 }
 
+float tone_mapping(float cor, float c);
+float tone_mapping(float cor, float c)
+{
+    return cor / (cor + c);
+}
+
+float correcao_gama(float cor, float gama);
+float correcao_gama(float cor, float gama)
+{
+    return fastpow(cor, (1.0 / gama));
+}
+
+unsigned char conversao_para_24_bits(float cor);
+unsigned char conversao_para_24_bits(float cor)
+{
+    float menor = fminf(1.0, cor);
+    return (unsigned char)menor;
+}
+
 int main(int argc, char** argv)
 {
     if(argc==1) {
