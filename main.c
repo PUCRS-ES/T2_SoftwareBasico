@@ -46,9 +46,9 @@ void process()
     //
     int pos;
     for(pos=0; pos<sizeX*sizeY; pos++) {
-        image8[pos].r = (unsigned char) (255 * exposure);
-        image8[pos].g = (unsigned char) (127 * exposure);
-        image8[pos].b = (unsigned char) (0 * exposure);
+        image8[pos].r = (unsigned char) (image[pos].r * exposure);
+        image8[pos].g = (unsigned char) (image[pos].g * exposure);
+        image8[pos].b = (unsigned char) (image[pos].b * exposure);
     }
 
     //
@@ -76,17 +76,24 @@ int main(int argc, char** argv)
     // 2. Ler os pixels
     //
 
-    // TESTE: cria uma imagem de 800x600
-    sizeX = 800;
-    sizeY = 600;
+    // Abre o arquivo
+    FILE* arq = fopen("imagens-hdr/memorial.hdr","rb");
 
-    printf("%d x %d\n", sizeX, sizeY);
+    // Lê o header do arquivo, de onde são extraídas a largura e altura
+    RGBE_ReadHeader(arq, &sizeX, &sizeY, NULL);
 
     // Aloca imagem float
     image = (RGBf *)malloc(sizeof(RGBf) * sizeX * sizeY);
 
     // Aloca memória para imagem de 24 bits
     image8 = (RGB8*) malloc(sizeof(RGB8) * sizeX * sizeY);
+
+    // Finalmente, lê a imagem para a memória
+    int result = RGBE_ReadPixels_RLE(arq, (float*)image, sizeX, sizeY);
+    if (result == RGBE_RETURN_FAILURE) {
+
+    }
+    fclose(arq);
 
     exposure = 1.0f; // exposição inicial
 

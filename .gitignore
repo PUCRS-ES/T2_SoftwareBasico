@@ -1,5 +1,4 @@
 *~
 *.o
-spdviewer/exemploGLUT
-spdviewer/exemploGLUT.depend
-spdviewer/exemploGLUT.layout
+*.depend
+*.layout
