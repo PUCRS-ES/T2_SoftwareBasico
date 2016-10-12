@@ -8,6 +8,7 @@
 #include "rgbe.h"
 
 // Variáveis globais a serem utilizadas:
+RGBf* image_aux;
 
 // Dimensões da imagem de entrada
 int sizeX, sizeY;
@@ -33,32 +34,8 @@ float fastpow(float a, float b) {
       return u.f;
 }
 
-// Função principal de processamento: ela deve chamar outras funções
-// quando for necessário (ex: algoritmos de tone mapping, etc)
-void process()
-{
-    printf("Exposure: %.3f\n", exposure);
-    //
-    // EXEMPLO: preenche a imagem com pixels cor de laranja...
-    //
-    //
-    // SUBSTITUA este código pelos algoritmos a serem implementados
-    //
-    int pos;
-    for(pos=0; pos<sizeX*sizeY; pos++) {
-        image8[pos].r = (unsigned char) (image[pos].r * exposure);
-        image8[pos].g = (unsigned char) (image[pos].g * exposure);
-        image8[pos].b = (unsigned char) (image[pos].b * exposure);
-    }
-
-    //
-    // NÃO ALTERAR A PARTIR DAQUI!!!!
-    //
-    buildTex();
-}
-
-float tone_mapping(float cor, float c);
-float tone_mapping(float cor, float c)
+float escala(float cor, float c);
+float escala(float cor, float c)
 {
     return cor / (cor + c);
 }
@@ -74,6 +51,46 @@ unsigned char conversao_para_24_bits(float cor)
 {
     float menor = fminf(1.0, cor);
     return (unsigned char)menor;
+}
+
+// Função principal de processamento: ela deve chamar outras funções
+// quando for necessário (ex: algoritmos de tone mapping, etc)
+void process()
+{
+    printf("Exposure: %.3f\n", exposure);
+    //
+    // EXEMPLO: preenche a imagem com pixels cor de laranja...
+    //
+    //
+    // SUBSTITUA este código pelos algoritmos a serem implementados
+    //
+    int pos;
+    for(pos=0; pos<sizeX*sizeY; pos++) {
+        //aplica o fator de exposicao
+        image_aux[pos].r = (image[pos].r * exposure);
+        image_aux[pos].g = (image[pos].g * exposure);
+        image_aux[pos].b = (image[pos].b * exposure);
+
+        if (modo == SCALE) {
+            image_aux[pos].r = escala(image_aux[pos].r, 0.5f);
+            image_aux[pos].g = escala(image_aux[pos].g, 0.5f);
+            image_aux[pos].b = escala(image_aux[pos].b, 0.5f);
+        }
+        else { // nesse caso, modo é igual a GAMMA
+            image_aux[pos].r = correcao_gama(image_aux[pos].r, 2.0f);
+            image_aux[pos].g = correcao_gama(image_aux[pos].g, 2.0f);
+            image_aux[pos].b = correcao_gama(image_aux[pos].b, 2.0f);
+        }
+
+        image8[pos].r = conversao_para_24_bits(image_aux[pos].r);
+        image8[pos].g = conversao_para_24_bits(image_aux[pos].g);
+        image8[pos].b = conversao_para_24_bits(image_aux[pos].b);
+    }
+
+    //
+    // NÃO ALTERAR A PARTIR DAQUI!!!!
+    //
+    buildTex();
 }
 
 int main(int argc, char** argv)
@@ -103,6 +120,7 @@ int main(int argc, char** argv)
 
     // Aloca imagem float
     image = (RGBf *)malloc(sizeof(RGBf) * sizeX * sizeY);
+    image_aux = (RGBf *)malloc(sizeof(RGBf) * sizeX * sizeY);
 
     // Aloca memória para imagem de 24 bits
     image8 = (RGB8*) malloc(sizeof(RGB8) * sizeX * sizeY);
