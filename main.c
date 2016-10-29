@@ -50,6 +50,7 @@ unsigned char conversao_para_24_bits(float cor);
 unsigned char conversao_para_24_bits(float cor)
 {
     float menor = fminf(1.0, cor);
+    menor = menor * 255;
     return (unsigned char)menor;
 }
 
