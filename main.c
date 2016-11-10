@@ -72,12 +72,14 @@ void process()
         image_aux[pos].g = (image[pos].g * exposure);
         image_aux[pos].b = (image[pos].b * exposure);
 
+        //Tone mapping por escala: Pressionar letra "T"
         if (modo == SCALE) {
             image_aux[pos].r = escala(image_aux[pos].r, 0.5f);
             image_aux[pos].g = escala(image_aux[pos].g, 0.5f);
             image_aux[pos].b = escala(image_aux[pos].b, 0.5f);
         }
-        else { // nesse caso, modo é igual a GAMMA
+        //Gamma correction: Pressionar letra "G"
+        else {
             image_aux[pos].r = correcao_gama(image_aux[pos].r, 2.0f);
             image_aux[pos].g = correcao_gama(image_aux[pos].g, 2.0f);
             image_aux[pos].b = correcao_gama(image_aux[pos].b, 2.0f);
@@ -114,7 +116,12 @@ int main(int argc, char** argv)
     //
 
     // Abre o arquivo
-    FILE* arq = fopen("imagens-hdr/memorial.hdr","rb");
+    FILE* arq = NULL;
+    if(argc == 2)
+        arq = fopen(argv[1],"rb");
+    else
+        arq = fopen("imagens-hdr/memorial.hdr","rb");
+    printf("%s", argv[1]);
 
     // Lê o header do arquivo, de onde são extraídas a largura e altura
     RGBE_ReadHeader(arq, &sizeX, &sizeY, NULL);
@@ -129,7 +136,9 @@ int main(int argc, char** argv)
     // Finalmente, lê a imagem para a memória
     int result = RGBE_ReadPixels_RLE(arq, (float*)image, sizeX, sizeY);
     if (result == RGBE_RETURN_FAILURE) {
-
+        printf("Erro: nao foi possivel ler a imagem.");
+        fclose(arq);
+        exit(1);
     }
     fclose(arq);
 
